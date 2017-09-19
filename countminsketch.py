@@ -2,7 +2,8 @@
 import hashlib
 import array
 
-
+from sys import version_info
+	
 class CountMinSketch(object):
     """
     A class for counting hashable items using the Count-min Sketch strategy.
@@ -46,15 +47,27 @@ class CountMinSketch(object):
         self.d = d
         self.n = 0
         self.tables = []
-        for _ in xrange(d):
-            table = array.array("l", (0 for _ in xrange(m)))
-            self.tables.append(table)
-
+        
+        if version_info[0] < 3:
+            for _ in xrange(d):
+                table = array.array("l", (0 for _ in xrange(m)))
+                self.tables.append(table)
+        else:
+            for _ in range(d):
+                table = array.array("l", (0 for _ in range(m)))
+                self.tables.append(table)
+            	
     def _hash(self, x):
-        md5 = hashlib.md5(str(hash(x)))
-        for i in xrange(self.d):
-            md5.update(str(i))
-            yield int(md5.hexdigest(), 16) % self.m
+        if version_info[0] < 3:
+            md5 = hashlib.md5(str(hash(x)))
+            for i in xrange(self.d):
+                md5.update(str(i))
+                yield int(md5.hexdigest(), 16) % self.m
+        else:
+            md5 = hashlib.md5(str(hash(x)).encode('UTF-8'))
+            for i in range(self.d):
+                md5.update(str(i).encode('UTF-8'))
+                yield int(md5.hexdigest(), 16) % self.m
 
     def add(self, x, value=1):
         """
